@@ -10,7 +10,7 @@
 arkstVersion='1.6'
 arkstTag=''
 arkstCommit=''
-arkstGithubRepo="FezVrasta/ark-server-tools"
+arkstGithubRepo="ZokRadonh/ark-server-tools"
 arkstRootUseEnv=''
 arkstGlobalCfgFile='/etc/arkmanager/arkmanager.cfg'
 arkstUserCfgFile='.arkmanager.cfg'
@@ -2677,11 +2677,14 @@ doRemoveCronJob(){
 # Print the status of the server (running? online? version?)
 #
 printStatus(){
-  if isTheServerRunning ;then
-    echo -e "$NORMAL" "Server running: " "$GREEN" "Yes" "$NORMAL"
-    echo -e "$NORMAL" "Server PID: " "$GREEN" "$(getServerPID)" "$NORMAL"
-  else
-    echo -e "$NORMAL" "Server running: " "$RED" "No" "$NORMAL"
+  
+  if [ -z "$skipSlowOperations" ]; then
+    if isTheServerRunning ;then
+      echo -e "$NORMAL" "Server running: " "$GREEN" "Yes" "$NORMAL"
+      echo -e "$NORMAL" "Server PID: " "$GREEN" "$(getServerPID)" "$NORMAL"
+    else
+      echo -e "$NORMAL" "Server running: " "$RED" "No" "$NORMAL"
+    fi
   fi
 
   if isTheServerUp ;then
@@ -2724,12 +2727,13 @@ printStatus(){
       }
       print "Active Players: $active\n";
       ' "$(getQueryPort)" "${ark_MultiHome:-127.0.0.1}"
-
-    if isTheServerOnline; then
-      echo -e "$NORMAL" "Server online: " "$GREEN" "Yes" "$NORMAL"
-      echo -e "$NORMAL" "ARKServers link: " "$GREEN" "http://arkservers.net/server/${publicip}:$(getQueryPort)" "$NORMAL"
-    else
-      echo -e "$NORMAL" "Server online: " "$RED" "No" "$NORMAL"
+    if [ -z "$skipSlowOperations" ]; then
+      if isTheServerOnline; then
+        echo -e "$NORMAL" "Server online: " "$GREEN" "Yes" "$NORMAL"
+        echo -e "$NORMAL" "ARKServers link: " "$GREEN" "http://arkservers.net/server/${publicip}:$(getQueryPort)" "$NORMAL"
+      else
+        echo -e "$NORMAL" "Server online: " "$RED" "No" "$NORMAL"
+      fi
     fi
   fi
 
@@ -2938,6 +2942,10 @@ main(){
         progressDisplayType=dots
         continue
       ;;
+      --skipSlowOperations)
+        skipSlowOperations=1
+        continue
+      ;;
       --spinner)
         progressDisplayType=spinner
         continue
@@ -2975,6 +2983,9 @@ main(){
         ;;
         --verbose)
           verbose=1
+        ;;
+        --skipSlowOperations)
+          skipSlowOperations=1
         ;;
         --dots)
           progressDisplayType=dots
